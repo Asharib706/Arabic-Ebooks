@@ -1,0 +1,11 @@
+streamlit
+pymongo
+pymupdf
+google-generativeai
+pyarabic
+python-dotenv
+bs4
+Pillow
+edge-tts
+python-magic
+PyArabic
