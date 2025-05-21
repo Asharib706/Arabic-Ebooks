@@ -83,9 +83,9 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("""
     <div class="app-card">
-        <div class="app-title">📖 Ebook Reader</div>
+        <div class="app-title">Arabic PDF Processing</div>
         <div class="app-description">
-            Read Arabic ebooks with chapter navigation and text-to-speech functionality
+            Convert Arabic PDFs to text, extract chapters,etc. with advanced processing features.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -98,7 +98,7 @@ with col2:
     <div class="app-card">
         <div class="app-title">🔧 Ebook Tools</div>
         <div class="app-description">
-            Convert ebooks to DOCX or audio formats with advanced settings
+            Read Arabic ebooks with chapter navigation ,Docx file Conversion and text-to-speech functionality
         </div>
     </div>
     """, unsafe_allow_html=True)
