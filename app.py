@@ -3,6 +3,8 @@ from backend import PDFProcessor, DatabaseManager, TextToSpeech
 from datetime import datetime
 import tempfile
 import base64
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+
 # Initialize backend components
 pdf_processor = PDFProcessor()
 db_manager = DatabaseManager()
