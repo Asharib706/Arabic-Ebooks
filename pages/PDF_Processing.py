@@ -35,6 +35,8 @@ def main():
     if uploaded_file is not None:
         # Extract original PDF name before creating temp file
         original_pdf_name = uploaded_file.name
+        st.info(f"Original PDF name: {original_pdf_name}")
+
         cleaned_pdf_name = pdf_processor.clean_pdf_name(original_pdf_name)
         # Display the extracted name
         st.info(f"Original PDF name: {original_pdf_name}")
