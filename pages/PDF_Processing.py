@@ -26,6 +26,10 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+def sanitize_keep_arabic(filename):
+    # Remove invalid filesystem chars but keep Arabic/Unicode
+    filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', '_', filename)  # Remove illegal chars
+    return filename.strip()
 
 def main():
     st.title("Arabic PDF Processing System")
@@ -35,8 +39,10 @@ def main():
     if uploaded_file is not None:
         # Extract original PDF name before creating temp file
         original_pdf_name = uploaded_file.name
-
-        cleaned_pdf_name = pdf_processor.clean_pdf_name(original_pdf_name)
+        original_pdf_name = uploaded_file.name
+        cleaned_pdf_name = sanitize_keep_arabic(original_pdf_name)  # Keeps Arabic
+    
+        cleaned_pdf_name = pdf_processor.clean_pdf_name(cleaned_pdf_name)
         # Display the extracted name
         st.info(f"Original PDF name: {original_pdf_name}")
         st.info(f"Cleaned PDF name: {cleaned_pdf_name}")
