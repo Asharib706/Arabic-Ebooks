@@ -9,3 +9,4 @@ Pillow
 edge-tts
 python-magic
 PyArabic
+pydub
