@@ -10,3 +10,4 @@ edge-tts
 python-magic
 PyArabic
 pydub
+python-docx
