@@ -11,3 +11,4 @@ python-magic
 PyArabic
 pydub
 python-docx
+streamlit-extras
