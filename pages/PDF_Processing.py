@@ -128,8 +128,7 @@ def main():
         </script>
         """,
         height=0,
-        width=0,
-        key="file_upload_handler"
+        width=0
     )
 
     # Check for file data in session state
