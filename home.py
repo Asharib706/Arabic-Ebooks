@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_extras.switch_page_button import switch_page
 
 # Page configuration - no sidebar
 st.set_page_config(
@@ -92,7 +91,7 @@ with col1:
     """, unsafe_allow_html=True)
     
     if st.button("Go to Ebook Reader", key="reader_btn"):
-        switch_page("PDF_Processing")
+        st.switch_page("pages/PDF_Processing.py")
 
 with col2:
     st.markdown("""
@@ -105,7 +104,7 @@ with col2:
     """, unsafe_allow_html=True)
     
     if st.button("Go to Ebook Tools", key="tools_btn"):
-        switch_page("Ebooks.py")
+        st.switch_page("pages/Ebooks.py")
 
 # Footer
 st.markdown("---")
