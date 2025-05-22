@@ -2,7 +2,7 @@ import streamlit as st
 from backend import PDFProcessor, DatabaseManager
 import tempfile
 import json
-import uuid
+from pathlib import Path
 
 # Initialize backend components
 pdf_processor = PDFProcessor()
@@ -14,19 +14,22 @@ st.set_page_config(page_title="Arabic PDF Processor", layout="wide")
 # Custom CSS for uploader
 st.markdown("""
 <style>
-    .upload-container {
-        border: 2px dashed #ccc;
+    .upload-box {
+        border: 2px dashed #cccccc;
         border-radius: 5px;
-        padding: 20px;
+        padding: 25px;
         text-align: center;
-        margin-bottom: 20px;
+        margin: 20px 0;
+        background-color: #f9f9f9;
     }
-    .upload-container:hover {
-        border-color: #aaa;
+    .upload-box.highlight {
+        border-color: #6666ff;
+        background-color: #f0f0ff;
     }
-    #file-name {
+    #file-info {
         margin-top: 10px;
         font-weight: bold;
+        color: #333333;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -38,92 +41,112 @@ def main():
     # Initialize session state
     if 'uploaded_file' not in st.session_state:
         st.session_state.uploaded_file = None
-        st.session_state.file_processed = False
+        st.session_state.file_ready = False
 
-    # Custom HTML File Uploader
+    # Custom HTML File Uploader with direct communication
     st.markdown("""
-    <div class="upload-container">
-        <input type="file" id="file-upload" accept=".pdf">
-        <p>Drag and drop your PDF here or click to browse</p>
-        <div id="file-name"></div>
+    <div class="upload-box" id="upload-box">
+        <h4>📁 Drag & Drop PDF Here</h4>
+        <p>or click to browse files</p>
+        <input type="file" id="file-upload" accept=".pdf" style="display:none;">
+        <div id="file-info">No file selected</div>
     </div>
 
     <script>
-    const fileUpload = document.getElementById('file-upload');
-    const fileNameDisplay = document.getElementById('file-name');
+    const uploadBox = document.getElementById('upload-box');
+    const fileInput = document.getElementById('file-upload');
+    const fileInfo = document.getElementById('file-info');
 
-    fileUpload.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            fileNameDisplay.innerHTML = `Selected: <strong>${file.name}</strong>`;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const bytes = Array.from(new Uint8Array(e.target.result));
-                
-                // Send data to Streamlit
-                const data = {
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                    bytes: bytes,
-                    lastModified: file.lastModified
-                };
-                
-                // Create a hidden element to store the data
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.id = 'file-data';
-                hiddenInput.value = JSON.stringify(data);
-                document.body.appendChild(hiddenInput);
-                
-                // Notify Streamlit to check for the data
-                window.parent.postMessage({
-                    type: 'streamlit:setComponentValue',
-                    value: 'file_uploaded'
-                }, '*');
-            };
-            reader.readAsArrayBuffer(file);
+    // Click handler
+    uploadBox.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop handlers
+    uploadBox.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadBox.classList.add('highlight');
+    });
+
+    ['dragleave', 'dragend'].forEach(type => {
+        uploadBox.addEventListener(type, () => {
+            uploadBox.classList.remove('highlight');
+        });
+    });
+
+    uploadBox.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadBox.classList.remove('highlight');
+        
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelect(fileInput.files[0]);
         }
     });
+
+    // File selection handler
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            handleFileSelect(fileInput.files[0]);
+        }
+    });
+
+    function handleFileSelect(file) {
+        fileInfo.innerHTML = `Selected: <strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} MB)`;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const bytes = Array.from(new Uint8Array(e.target.result));
+            
+            // Create a custom event with the file data
+            const event = new CustomEvent('fileUploaded', {
+                detail: {
+                    name: file.name,
+                    bytes: bytes,
+                    size: file.size,
+                    type: file.type
+                }
+            });
+            document.dispatchEvent(event);
+        };
+        reader.readAsArrayBuffer(file);
+    }
     </script>
     """, unsafe_allow_html=True)
 
-    # Create a dummy component to trigger Python callback
-    uploaded = st.checkbox("File uploaded", key="file_uploaded", disabled=True, label_visibility="hidden")
-
-    # When the checkbox changes (triggered by JavaScript)
-    if uploaded:
-        # Get the file data from the hidden HTML element
-        file_data = st.components.v1.html(
-            """
-            <script>
-            const fileData = document.getElementById('file-data').value;
+    # Create a custom component to receive file data
+    file_data = st.components.v1.html(
+        """
+        <script>
+        document.addEventListener('fileUploaded', function(e) {
+            const data = e.detail;
+            // Send to Streamlit through the component
             window.parent.postMessage({
-                type: 'streamlit:reportData',
-                data: fileData
+                isStreamlitMessage: true,
+                type: 'fileData',
+                data: data
             }, '*');
-            </script>
-            """,
-            height=0,
-            width=0,
-        )
+        });
+        </script>
+        """,
+        height=0,
+        width=0,
+        key="file_upload_handler"
+    )
 
-        # Listen for the file data
-        if file_data:
-            try:
-                file_json = json.loads(file_data)
-                st.session_state.uploaded_file = {
-                    "name": file_json["name"],
-                    "bytes": bytes(file_json["bytes"])
-                }
-                st.success(f"File ready for processing: {file_json['name']}")
-                st.session_state.file_processed = False
-            except Exception as e:
-                st.error(f"Error processing file: {str(e)}")
+    # Check for file data in session state
+    if file_data and 'data' in file_data:
+        try:
+            file_info = file_data['data']
+            st.session_state.uploaded_file = {
+                "name": file_info['name'],
+                "bytes": bytes(file_info['bytes'])
+            }
+            st.session_state.file_ready = True
+            st.success(f"File ready for processing: {file_info['name']}")
+        except Exception as e:
+            st.error(f"Error processing file: {str(e)}")
 
-    # Process the file (your original logic)
-    if st.session_state.uploaded_file and not st.session_state.file_processed:
+    # Process the file (your original logic - unchanged)
+    if st.session_state.file_ready and st.session_state.uploaded_file:
         original_pdf_name = st.session_state.uploaded_file["name"]
         cleaned_pdf_name = pdf_processor.clean_pdf_name(original_pdf_name)
         
@@ -154,7 +177,7 @@ def main():
                     
                     if book_id:
                         st.session_state.current_book_id = book_id
-                        st.session_state.file_processed = True
+                        st.session_state.file_ready = False
                         st.success(f"Processed {len(report['newly_processed'])} pages successfully!")
                         
                         with st.expander("Processing Details"):
