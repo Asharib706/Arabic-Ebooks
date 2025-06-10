@@ -70,12 +70,11 @@ def init_connection():
 
 db = init_connection()
 
-@st.cache_data
 def get_all_books():
     """Get list of all unique PDF books with metadata"""
     return list(db[PDF_COLLECTION].find({}))
 
-@st.cache_data
+
 def get_pages_for_book(pdf_name):
     """Get all pages for a specific book, sorted by pdf_page_number"""
     return list(db[PAGES_COLLECTION].find({"pdf_name": pdf_name}).sort("pdf_page_number", 1))
