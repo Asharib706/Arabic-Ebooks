@@ -27,7 +27,7 @@ st.markdown("""
     border: 1px solid #e0e0e0;
     padding: 30px;
     border-radius: 8px;
-    height: 500px;
+    min-height: 500px;
     background-color: #fafafa;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
@@ -272,19 +272,11 @@ def main():
             
             # Display the Arabic content
             html_content = current_page_data.get("text", "")
-            # st.markdown(
-            #     f"""
-            #     <div class="page-container arabic-content">
-            #     {html_content}
-            #     </div>
-            #     """,
-            #     unsafe_allow_html=True
-            # )
             st.markdown(
                 f"""
                 <div class="page-container arabic-content">
                 {html_content}
-                </div>
+                
                 """,
                 unsafe_allow_html=True
             )
