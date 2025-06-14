@@ -272,15 +272,21 @@ def main():
             
             # Display the Arabic content
             html_content = current_page_data.get("text", "")
+            # st.markdown(
+            #     f"""
+            #     <div class="page-container arabic-content">
+            #     {html_content}
+            #     </div>
+            #     """,
+            #     unsafe_allow_html=True
+            # )
             st.markdown(
                 f"""
                 <div class="page-container arabic-content">
                 {html_content}
-                </div>
                 """,
                 unsafe_allow_html=True
             )
-            
             # Page info
             col1, col2 = st.columns(2)
             with col1:
