@@ -85,28 +85,9 @@ st.markdown("""
     border: 1px solid var(--border-color) !important;
 }
 
-/* Number input styling */
-.stNumberInput>div>div>input {
-    color: var(--text-color) !important;
-    background-color: var(--background-color) !important;
-}
 
-/* Radio button styling */
-.stRadio>div {
-    background-color: var(--secondary-background) !important;
-}
 
-/* Selectbox styling */
-.stSelectbox>div>div>div {
-    color: var(--text-color) !important;
-    background-color: var(--background-color) !important;
-}
 
-/* Divider color */
-.stMarkdown hr {
-    border-color: var(--border-color) !important;
-}
-</style>
 """, unsafe_allow_html=True)
 
 # MongoDB connection (unchanged)
