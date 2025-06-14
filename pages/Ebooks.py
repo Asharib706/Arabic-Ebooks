@@ -108,33 +108,60 @@ def get_pages_for_book(pdf_name):
     return list(db[PAGES_COLLECTION].find({"pdf_name": pdf_name}).sort("pdf_page_number", 1))
 
 def get_chapter_boundaries(book_metadata, pages):
-    """Get chapter boundaries based on metadata and actual pages"""
+    """Get chapter boundaries based on metadata and actual pages.
+    Skips chapters with null/None page numbers and moves to the next chapter."""
     chapters = book_metadata.get("chapters", [])
     if not chapters:
         return [{"name": "Full Book", "start_page": 0, "end_page": len(pages)-1}]
     
     chapter_pages = []
-    for i, chapter in enumerate(chapters):
-        # Find the actual page index that matches this chapter's page number
-        start_page = next((idx for idx, p in enumerate(pages) 
-                         if p["page_number"] == chapter["page_number"]),chapters[i]["page_number"]+1)
-        
-        if i < len(chapters) - 1:
-            end_page = next((idx for idx, p in enumerate(pages) 
-                           if p["page_number"] == chapters[i+1]["page_number"]), chapters[i+1]["page_number"])-1
+    valid_chapters = []
+    
+    # First filter out chapters with null/None page numbers
+    for chapter in chapters:
+        if chapter.get("page_number") is not None:
+            valid_chapters.append(chapter)
+    
+    # If no valid chapters remain after filtering, return full book
+    if not valid_chapters:
+        return [{"name": "Full Book", "start_page": 0, "end_page": len(pages)-1}]
+    
+    # Process only valid chapters
+    for i, chapter in enumerate(valid_chapters):
+        try:
+            # Find the actual page index that matches this chapter's page number
+            start_page = next(
+                idx for idx, p in enumerate(pages) 
+                if p["page_number"] == chapter["page_number"]
+            )
             
-        else:
-            end_page = len(pages)
-
-        # Ensure valid page range
-        start_page = start_page
-        end_page = end_page
-        
-        chapter_pages.append({
-            "name": chapter["name"],
-            "start_page": start_page,
-            "end_page": end_page
-        })
+            if i < len(valid_chapters) - 1:
+                try:
+                    end_page = next(
+                        idx for idx, p in enumerate(pages) 
+                        if p["page_number"] == valid_chapters[i+1]["page_number"]
+                    ) - 1
+                except StopIteration:
+                    # If next chapter's page not found, use end of book
+                    end_page = len(pages) - 1
+            else:
+                end_page = len(pages) - 1
+            
+            # Ensure valid page range
+            if start_page <= end_page:
+                chapter_pages.append({
+                    "name": chapter["name"],
+                    "start_page": start_page,
+                    "end_page": end_page
+                })
+                
+        except StopIteration:
+            # Skip this chapter if its page number isn't found in the pages
+            continue
+    
+    # If no valid chapters were processed (all had page numbers not found in pages)
+    if not chapter_pages:
+        return [{"name": "Full Book", "start_page": 0, "end_page": len(pages)-1}]
     
     # Add "Full Book" option at the beginning
     chapter_pages.insert(0, {
