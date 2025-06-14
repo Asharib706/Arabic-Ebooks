@@ -17,7 +17,7 @@ st.markdown("""
             
 .arabic-content {
     font-family: 'Amiri', serif !important;
-    font-size: 12px !important;
+    font-size: 16px !important;
     text-align: right;
     direction: rtl;
     line-height: 1.5;
