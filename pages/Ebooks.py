@@ -75,11 +75,6 @@ st.markdown("""
     margin: 5px;
 }
 
-/* Sidebar styling */
-[data-testid="stSidebar"] {
-    background-color: var(--secondary-background) !important;
-}
-
 /* Button styling */
 .stButton>button {
     border: 1px solid var(--border-color) !important;
