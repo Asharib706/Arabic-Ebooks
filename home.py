@@ -19,7 +19,7 @@ st.markdown("""
     /* Main header style - uses theme text color */
     .header {
         font-size: 2.5em;
-        color: var(--text-color);
+        color: light-blue;
         text-align: center;
         margin: 20px 0 40px 0;
     }
