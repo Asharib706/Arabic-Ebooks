@@ -58,7 +58,6 @@ st.markdown("""
     font-size: 20px;
     text-align: center;
     margin-bottom: 2px;
-    color: var(--title-color);
 }
 
 .chapter-title {

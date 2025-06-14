@@ -69,7 +69,6 @@ st.markdown("""
     .footer {
         text-align: center;
         margin-top: 50px;
-        color: var(--text-color);
         opacity: 0.7;
         padding: 20px;
     }
