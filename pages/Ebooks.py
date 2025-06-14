@@ -20,14 +20,14 @@ st.markdown("""
     font-size: 16px !important;
     text-align: right;
     direction: rtl;
-    line-height: 1.5;
+    line-height: 0;
 }
 
 .page-container {
     border: 1px solid #e0e0e0;
     padding: 30px;
     border-radius: 8px;
-    min-height: 500px;
+    height: 500px;
     background-color: #fafafa;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
