@@ -1,35 +1,56 @@
 import streamlit as st
 from pymongo import MongoClient
-
 from bs4 import BeautifulSoup
 from backend import TextToSpeech, html_to_docx
 from io import BytesIO
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+
 # Set page config
 st.set_page_config(layout="wide", page_title="Arabic Ebook Viewer")
 tts = TextToSpeech()
 
-# Custom CSS
+# Custom CSS with theme awareness
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
             
+:root {
+    --text-color: #000000;
+    --background-color: #ffffff;
+    --secondary-background: #fafafa;
+    --border-color: #e0e0e0;
+    --shadow-color: rgba(0,0,0,0.05);
+    --title-color: #2c3e50;
+    --chapter-border: #e0e0e0;
+}
+
+[data-theme="dark"] {
+    --text-color: #ffffff;
+    --background-color: #0e1117;
+    --secondary-background: #1a1d24;
+    --border-color: #2a2a2a;
+    --shadow-color: rgba(0,0,0,0.2);
+    --title-color: #f0f0f0;
+    --chapter-border: #3a3a3a;
+}
+
 .arabic-content {
     font-family: 'Amiri', serif !important;
     font-size: 16px !important;
     text-align: right;
     direction: rtl;
     line-height: 1.4;
+    color: var(--text-color);
 }
 
 .page-container {
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     padding: 30px;
     border-radius: 8px;
     min-height: 500px;
-    background-color: #fafafa;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background-color: var(--secondary-background);
+    box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .title-style {
@@ -37,26 +58,58 @@ st.markdown("""
     font-size: 20px;
     text-align: center;
     margin-bottom: 2px;
-    color: #2c3e50;
+    color: var(--title-color);
 }
 
 .chapter-title {
     font-family: 'Amiri', serif;
     font-size: 20px;
-    color: #2c3e50;
+    color: var(--title-color);
     text-align: center;
     margin: 12px 0;
     padding-bottom: 5px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--chapter-border);
 }
 
 .nav-button {
     margin: 5px;
 }
+
+/* Sidebar styling */
+[data-testid="stSidebar"] {
+    background-color: var(--secondary-background) !important;
+}
+
+/* Button styling */
+.stButton>button {
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Number input styling */
+.stNumberInput>div>div>input {
+    color: var(--text-color) !important;
+    background-color: var(--background-color) !important;
+}
+
+/* Radio button styling */
+.stRadio>div {
+    background-color: var(--secondary-background) !important;
+}
+
+/* Selectbox styling */
+.stSelectbox>div>div>div {
+    color: var(--text-color) !important;
+    background-color: var(--background-color) !important;
+}
+
+/* Divider color */
+.stMarkdown hr {
+    border-color: var(--border-color) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
-# MongoDB connection
+# MongoDB connection (unchanged)
 MONGO_URI = "mongodb+srv://ullah:asad1234@cluster0.572ay.mongodb.net/"
 DB_NAME = "pdf_processing"
 PDF_COLLECTION = "pdf_metadata"
@@ -73,7 +126,6 @@ db = init_connection()
 def get_all_books():
     """Get list of all unique PDF books with metadata"""
     return list(db[PDF_COLLECTION].find({}))
-
 
 def get_pages_for_book(pdf_name):
     """Get all pages for a specific book, sorted by pdf_page_number"""
@@ -118,7 +170,7 @@ def get_chapter_boundaries(book_metadata, pages):
     return chapter_pages
 
 def main():
-    # Initialize session state
+    # Initialize session state (unchanged)
     if 'selected_book' not in st.session_state:
         st.session_state.selected_book = None
     if 'current_page' not in st.session_state:
@@ -276,7 +328,7 @@ def main():
                 f"""
                 <div class="page-container arabic-content">
                 {html_content}
-                
+                </div>
                 """,
                 unsafe_allow_html=True
             )
@@ -291,95 +343,86 @@ def main():
                 else:
                     st.write(f"**Page:** {st.session_state.current_page + 1} of {len(book_pages)}")
 
-        # Inside your main content display block (where you show the Arabic text)
-        if st.session_state.selected_book and st.session_state.current_page < len(book_pages):
-            
-            st.markdown("---")
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                if st.button("📄 Download Current Page (DOCX)"):
-                    with st.spinner("Generating DOCX..."):
+        # Action buttons section
+        st.markdown("---")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("📄 Download Current Page (DOCX)"):
+                with st.spinner("Generating DOCX..."):
+                    doc = Document()
+                    html_to_docx(current_page_data.get("text", ""), doc)
+                    docx_buffer = BytesIO()
+                    doc.save(docx_buffer)
+                    docx_buffer.seek(0)
+                    
+                    st.download_button(
+                        label="⬇️ Save DOCX",
+                        data=docx_buffer,
+                        file_name=f"page_{current_page_data['pdf_page_number']}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+        
+        with col2:
+            if st.button("📚 Export Full Book (DOCX)"):
+                try:
+                    with st.spinner("Compiling full book..."):
+                        all_pages = get_pages_for_book(st.session_state.selected_book["pdf_name"])
+                        
+                        if not all_pages:
+                            st.error("No pages found for this book")
+                            return
+                        
                         doc = Document()
-                        html_to_docx(current_page_data.get("text", ""), doc)
+                        
+                        if st.session_state.selected_book.get("title"):
+                            title_para = doc.add_paragraph()
+                            title_para.add_run(st.session_state.selected_book["title"]).bold = True
+                            title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        
+                        for i, page in enumerate(all_pages):
+                            if not page or not page.get("text"):
+                                continue
+                            
+                            html_to_docx(page["text"], doc)
+                            
+                            if i % 10 == 0:
+                                st.spinner(f"Processing page {i+1}/{len(all_pages)}...")
+                        
                         docx_buffer = BytesIO()
                         doc.save(docx_buffer)
                         docx_buffer.seek(0)
                         
+                        st.success("Book compilation complete!")
                         st.download_button(
-                            label="⬇️ Save DOCX",
+                            label="⬇️ Save Full Book",
                             data=docx_buffer,
-                            file_name=f"page_{current_page_data['pdf_page_number']}.docx",
+                            file_name=f"{st.session_state.selected_book.get('title', 'book')}.docx",
                             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         )
-            
-            # In your full book export section (around line 327):
-            with col2:
-                if st.button("📚 Export Full Book (DOCX)"):
+                
+                except Exception as e:
+                    st.error(f"Failed to export book: {str(e)}")
+        
+        with col3:
+            if st.button("🔊 Listen to This Page"):
+                with st.spinner("Generating audio (may take 20-30 seconds)..."):
                     try:
-                        with st.spinner("Compiling full book..."):
-                            all_pages = get_pages_for_book(st.session_state.selected_book["pdf_name"])
-                            
-                            # Validate we got pages
-                            if not all_pages:
-                                st.error("No pages found for this book")
-                                return
-                            
-                            doc = Document()
-                            
-                            # Add book metadata
-                            if st.session_state.selected_book.get("title"):
-                                title_para = doc.add_paragraph()
-                                title_para.add_run(st.session_state.selected_book["title"]).bold = True
-                                title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                            
-                            # Process pages
-                            for i, page in enumerate(all_pages):
-                                if not page or not page.get("text"):
-                                    continue  # Skip invalid pages
-                                
-                                html_to_docx(page["text"], doc)
-                                
-                                # Show progress
-                                if i % 10 == 0:  # Update every 10 pages
-                                    st.spinner(f"Processing page {i+1}/{len(all_pages)}...")
-                            
-                            # Save to buffer
-                            docx_buffer = BytesIO()
-                            doc.save(docx_buffer)
-                            docx_buffer.seek(0)
-                            
-                            st.success("Book compilation complete!")
-                            st.download_button(
-                                label="⬇️ Save Full Book",
-                                data=docx_buffer,
-                                file_name=f"{st.session_state.selected_book.get('title', 'book')}.docx",
-                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                            )
-                    
-                    except Exception as e:
-                        st.error(f"Failed to export book: {str(e)}")
-            # In your audio generation button section:
-            with col3:
-                if st.button("🔊 Listen to This Page"):
-                    with st.spinner("Generating audio (may take 20-30 seconds)..."):
-                        try:
-                            text_content = BeautifulSoup(current_page_data.get("text", ""), "html.parser").get_text()
-                            audio_bytes = tts.generate_speech(text_content)
+                        text_content = BeautifulSoup(current_page_data.get("text", ""), "html.parser").get_text()
+                        audio_bytes = tts.generate_speech(text_content)
 
-                            st.success("Audio generated!")
-                            st.audio(audio_bytes, format="audio/mp3")
+                        st.success("Audio generated!")
+                        st.audio(audio_bytes, format="audio/mp3")
 
-                            st.download_button(
-                                label="⬇️ Download Audio",
-                                data=audio_bytes,
-                                file_name=f"page_{current_page_data['pdf_page_number']}.mp3",
-                                mime="audio/mp3"
-                            )
-                        except RuntimeError as e:
-                            st.error(f"Audio generation failed. The text might be too long or contain unsupported characters.")
-                            st.code(f"Technical details: {str(e)}", language="text")
-                        # ===== END NEW SECTION =====
+                        st.download_button(
+                            label="⬇️ Download Audio",
+                            data=audio_bytes,
+                            file_name=f"page_{current_page_data['pdf_page_number']}.mp3",
+                            mime="audio/mp3"
+                        )
+                    except RuntimeError as e:
+                        st.error(f"Audio generation failed. The text might be too long or contain unsupported characters.")
+                        st.code(f"Technical details: {str(e)}", language="text")
 
 if __name__ == "__main__":
     main()
