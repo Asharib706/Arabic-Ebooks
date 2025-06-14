@@ -63,7 +63,6 @@ st.markdown("""
 .chapter-title {
     font-family: 'Amiri', serif;
     font-size: 20px;
-    color: var(--title-color);
     text-align: center;
     margin: 12px 0;
     padding-bottom: 5px;
