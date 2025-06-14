@@ -284,8 +284,9 @@ def main():
                 f"""
                 <div class="page-container arabic-content">
                 {html_content}
+                </div>
                 """,
-                unsafe_allow_html=True
+                unsafe_allow_html=False
             )
             # Page info
             col1, col2 = st.columns(2)
