@@ -8,37 +8,23 @@ st.set_page_config(
     initial_sidebar_state="collapsed"  # This hides the sidebar
 )
 
-# Custom CSS to hide sidebar, style navigation, and force light mode
+# Custom CSS to hide sidebar and style navigation with theme awareness
 st.markdown("""
 <style>
-    /* Force light mode */
-    :root {
-        --primary-color: #f63366;
-        --background-color: white;
-        --secondary-background-color: #f0f2f6;
-        --text-color: #262730;
-        --font: sans-serif;
-    }
-    
-    body {
-        background-color: white !important;
-        color: #262730 !important;
-    }
-    
     /* Hide the sidebar completely */
     section[data-testid="stSidebar"] {
         display: none !important;
     }
     
-    /* Main header style */
+    /* Main header style - uses theme text color */
     .header {
         font-size: 2.5em;
-        color: #2c3e50;
+        color: var(--text-color);
         text-align: center;
         margin: 20px 0 40px 0;
     }
     
-    /* App card styling */
+    /* App card styling - uses theme colors */
     .app-card {
         border-radius: 15px;
         padding: 30px;
@@ -46,8 +32,8 @@ st.markdown("""
         max-width: 500px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         transition: all 0.3s ease;
-        background: white;
-        border: 1px solid #e0e0e0;
+        background: var(--background-color);
+        border: 1px solid var(--border-color);
     }
     
     .app-card:hover {
@@ -57,13 +43,14 @@ st.markdown("""
     
     .app-title {
         font-size: 1.8em;
-        color: #2c3e50;
+        color: var(--text-color);
         margin-bottom: 15px;
         text-align: center;
     }
     
     .app-description {
-        color: #666;
+        color: var(--text-color);
+        opacity: 0.8;
         margin-bottom: 25px;
         text-align: center;
         line-height: 1.6;
@@ -82,22 +69,23 @@ st.markdown("""
     .footer {
         text-align: center;
         margin-top: 50px;
-        color: #95a5a6;
+        color: var(--text-color);
+        opacity: 0.7;
         padding: 20px;
     }
     
-    /* Override any dark mode elements */
-    .st-emotion-cache-1v0mbdj {
-        background-color: white !important;
+    /* Define CSS variables based on theme */
+    :root {
+        --text-color: #000000;
+        --background-color: #ffffff;
+        --border-color: #e0e0e0;
     }
     
-    .st-emotion-cache-1kyxreq {
-        background-color: white !important;
-    }
-    
-    /* Force all text to be dark */
-    p, h1, h2, h3, h4, h5, h6, div, span {
-        color: #262730 !important;
+    /* Dark theme overrides */
+    [data-theme="dark"] {
+        --text-color: #ffffff;
+        --background-color: #0e1117;
+        --border-color: #2a2a2a;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -113,7 +101,7 @@ with col1:
     <div class="app-card">
         <div class="app-title">Arabic PDF Processing</div>
         <div class="app-description">
-            Convert Arabic PDFs to text, extract chapters,etc. with advanced processing features.
+            Convert Arabic PDFs to text, extract chapters, etc. with advanced processing features.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -126,7 +114,7 @@ with col2:
     <div class="app-card">
         <div class="app-title">🔧 Ebook Tools</div>
         <div class="app-description">
-            Read Arabic ebooks with chapter navigation ,Docx file Conversion and text-to-speech functionality
+            Read Arabic ebooks with chapter navigation, Docx file Conversion and text-to-speech functionality
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -137,7 +125,7 @@ with col2:
 # Footer
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #95a5a6;">
+<div class="footer">
     <p>Developed by Muhammad Asharib • v1.0</p>
 </div>
 """, unsafe_allow_html=True)
