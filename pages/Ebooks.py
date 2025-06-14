@@ -286,7 +286,7 @@ def main():
                 {html_content}
                 </div>
                 """,
-                unsafe_allow_html=False
+                unsafe_allow_html=True
             )
             # Page info
             col1, col2 = st.columns(2)
