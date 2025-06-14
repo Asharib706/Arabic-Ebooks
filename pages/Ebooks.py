@@ -20,7 +20,7 @@ st.markdown("""
     font-size: 16px !important;
     text-align: right;
     direction: rtl;
-    line-height: 1;
+    line-height: 1.4;
 }
 
 .page-container {
