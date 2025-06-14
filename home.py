@@ -8,9 +8,23 @@ st.set_page_config(
     initial_sidebar_state="collapsed"  # This hides the sidebar
 )
 
-# Custom CSS to hide sidebar and style navigation
+# Custom CSS to hide sidebar, style navigation, and force light mode
 st.markdown("""
 <style>
+    /* Force light mode */
+    :root {
+        --primary-color: #f63366;
+        --background-color: white;
+        --secondary-background-color: #f0f2f6;
+        --text-color: #262730;
+        --font: sans-serif;
+    }
+    
+    body {
+        background-color: white !important;
+        color: #262730 !important;
+    }
+    
     /* Hide the sidebar completely */
     section[data-testid="stSidebar"] {
         display: none !important;
@@ -70,6 +84,20 @@ st.markdown("""
         margin-top: 50px;
         color: #95a5a6;
         padding: 20px;
+    }
+    
+    /* Override any dark mode elements */
+    .st-emotion-cache-1v0mbdj {
+        background-color: white !important;
+    }
+    
+    .st-emotion-cache-1kyxreq {
+        background-color: white !important;
+    }
+    
+    /* Force all text to be dark */
+    p, h1, h2, h3, h4, h5, h6, div, span {
+        color: #262730 !important;
     }
 </style>
 """, unsafe_allow_html=True)
