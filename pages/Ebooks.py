@@ -17,7 +17,7 @@ st.markdown("""
             
 .arabic-content {
     font-family: 'Amiri', serif !important;
-    font-size: 20px !important;
+    font-size: 16px !important;
     text-align: right;
     direction: rtl;
     line-height: 1.5;
@@ -34,7 +34,7 @@ st.markdown("""
 
 .title-style {
     font-family: 'Amiri', serif;
-    font-size: 24px;
+    font-size: 20px;
     text-align: center;
     margin-bottom: 2px;
     color: #2c3e50;
@@ -42,7 +42,7 @@ st.markdown("""
 
 .chapter-title {
     font-family: 'Amiri', serif;
-    font-size: 24px;
+    font-size: 20px;
     color: #2c3e50;
     text-align: center;
     margin: 12px 0;
